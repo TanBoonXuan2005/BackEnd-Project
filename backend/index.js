@@ -1,7 +1,6 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-require("dotenv").config();
-const bcrypt = require("bcryptjs");
 const { Pool } = require("pg");
 const { DATABASE_URL } = process.env;
 
@@ -28,60 +27,16 @@ async function getPostgresVersion() {
 
 getPostgresVersion();
 
-// Sign up
-app.post('/signup', async (req, res) => {
-  const client = await pool.connect();
+// Get court
+app.get("/courts", async (req, res) => {
   try {
-    const { email, password } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const userResult = await client.query(
-      'SELECT * FROM users WHERE email = $1',
-    [email]);
-
-    if (userResult.rows.length > 0) {
-      return res.status(400).json({ message: 'Email already exists' });
-    }
-
-    await client.query(
-      'INSERT INTO users (email, password) VALUES ($1, $2)', 
-    [email, hashedPassword]);
-
-    res.status(201).json({ message: 'User created successfully' });
+    const result = await pool.query('SELECT * FROM courts')
+    res.json(result.rows)
   } catch (error) {
-    console.error(error.message);
-    res.status(500).json({ error: 'Internal Server Error' });
-  } finally {
-    client.release();
-  }
-}); 
-
-// Login
-app.post('/login', async (req, res) => {
-  const client = await pool.connect();
-  const { email, password } = req.body;
-
-  try {
-    const user = await client.query(
-      'SELECT * FROM users WHERE email = $1',
-    [email]);
-
-    if (user.rows.length === 0) {
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
-
-    const passwordValid = await bcrypt.compare(password, user.rows[0].password);
-    if (!passwordValid) {
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
-
-    res.status(200).json({ message: 'Login successful' });
-  } catch (error) {
-    console.error('Error', error.message);
+    console.error(error.message)
     res.status(500).json({ message: 'Internal Server Error' })
-  } finally {
-    client.release();
   }
-});
+})
 
 // Get all bookings
 app.get("/bookings", async (req, res) => {

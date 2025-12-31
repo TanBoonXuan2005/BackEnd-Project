@@ -9,9 +9,16 @@ export default function Home() {
    const [loading, setLoading] = useState(true);
 
    useEffect(() => {
-      
-   })
-   if (loading) return ;
+      fetch("http://localhost:5000/courts")
+         .then((res) => res.json())
+         .then((data) => {
+            setCourts(data);
+            setLoading(false);
+         })
+         .catch((err) => {
+            console.error("Error: ",err);
+         });
+   }, []);
 
    return (
       <Container className="py-5">

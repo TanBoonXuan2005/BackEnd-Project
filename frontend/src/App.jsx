@@ -1,9 +1,12 @@
 import { RouterProvider } from "react-router-dom";
 import router from "./routes.jsx";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { AuthProvider } from "./components/AuthProivder.jsx";
 
 export default function App() {
   return (
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   );
 }

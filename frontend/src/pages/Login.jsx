@@ -1,14 +1,44 @@
 import { Col, Row, Image, Form, Button, Container } from "react-bootstrap";
 import { useNavigate } from 'react-router-dom';
+import { useContext, useEffect } from "react";
+import {
+    GoogleAuthProvider,
+    signInWithPopup,
+    getAuth,
+    signInWithEmailAndPassword,
+} from "firebase/auth";
+import { AuthContext } from "../components/AuthProivder";
 
 export default function Login() {
     const navigate = useNavigate();
-    const isLogin = localStorage.getItem("token");
     const loginImage = "";
+    const auth = getAuth();
+    const provider = new GoogleAuthProvider();
+    const { currentUser } = useContext(AuthContext);
 
-    const handleLogin = (e) => {
+    useEffect(() => {
+        if (currentUser) {
+            navigate("/booking");
+        }
+    }, [currentUser, navigate]);
+
+
+    const handleLogin = async(e) => {
         e.preventDefault();
-        navigate('/booking')
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+        } catch (err) {
+            console.error("Error: ",err);
+        }
+    }
+
+    const handleGoogleLogin = async(e) => {
+        e.preventDefault();
+        try {
+            await signInWithPopup(auth, provider);
+        } catch (err) {
+            console.error("Error: ",err);
+        }
     }
 
     return (
@@ -41,7 +71,12 @@ export default function Login() {
                                 <Form.Control type="password" placeholder="Enter your password" required />
                             </Form.Group>
 
-                            <Button variant="primary" type="submit" className="w-100 rounded-pill py-2 mb-2 fw-bold shadow-sm">
+                            <Button 
+                                variant="primary" 
+                                type="submit" 
+                                className="w-100 rounded-pill py-2 mb-2 fw-bold shadow-sm"
+                                onClick={handleLogin}    
+                            >
                                 Log In
                             </Button>
                         </Form>
@@ -53,7 +88,7 @@ export default function Login() {
                         </div>
 
                         <div className="d-grid gap-3">
-                            <Button className="rounded-pill" variant="outline-dark">
+                            <Button className="rounded-pill" variant="outline-dark" onClick={handleGoogleLogin}>
                                 <i className="bi bi-google"></i> Sign up with Google
                             </Button>
                             <Button className="rounded-pill" variant="outline-dark">

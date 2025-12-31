@@ -1,20 +1,22 @@
 import { Row, Col, Image, Form, Button, Container } from "react-bootstrap";
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
-
+import {
+    createUserWithEmailAndPassword,
+    getAuth,    
+} from "firebase/auth";
 
 export default function Register() {
     const navigate = useNavigate();
-    const isLogin = localStorage.getItem("token");
     const registerImage = "";
+    const auth = getAuth();
 
-    const handleRegister = (e) => {
+    const handleRegister = async(e) => {
         e.preventDefault();
-
         try {
-            navigate('/login')
+            await createUserWithEmailAndPassword(auth, email, password);
         } catch (err) {
-            console.error("Error: ",err)
+            console.error("Error: ",err);
         }
     }
     
