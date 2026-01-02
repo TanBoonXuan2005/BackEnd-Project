@@ -13,8 +13,15 @@ export default function Register() {
 
     const handleRegister = async(e) => {
         e.preventDefault();
+
+        if (formData.password !== formData.confirm_password) {
+            alert("Passwords do not match");
+            return;
+        }
+
         try {
-            await createUserWithEmailAndPassword(auth, email, password);
+            await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+            navigate("/login");
         } catch (err) {
             console.error("Error: ",err);
         }
@@ -119,7 +126,12 @@ export default function Register() {
                                 </Col>
                             </Row>
 
-                            <Button variant="dark" type="submit" className="w-100 rounded-pill py-2 mt-3 fw-bold shadow-sm">
+                            <Button 
+                                onClick={handleRegister}
+                                variant="dark" 
+                                type="submit" 
+                                className="w-100 rounded-pill py-2 mt-3 fw-bold shadow-sm"
+                            >
                                 Sign Up
                             </Button>
                         </Form>

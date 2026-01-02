@@ -6,6 +6,7 @@ import Register from "./pages/Register";
 import Header from "./components/Header";
 import ProfilePage from "./pages/ProfilePage";
 import ErrorPage from "./pages/ErrorPage";
+import Courts from "./pages/Courts";
 
 const router = createBrowserRouter([
     {
@@ -19,6 +20,10 @@ const router = createBrowserRouter([
             {
                 path: 'booking',
                 element: <BookingPage/>
+            },
+            {
+                path: 'courts',
+                element: <Courts/>
             },
             {
                 path: 'profile',

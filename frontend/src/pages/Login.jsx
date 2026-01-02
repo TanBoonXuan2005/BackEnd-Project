@@ -18,7 +18,7 @@ export default function Login() {
 
     useEffect(() => {
         if (currentUser) {
-            navigate("/booking");
+            navigate("/");
         }
     }, [currentUser, navigate]);
 

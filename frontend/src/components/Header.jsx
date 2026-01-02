@@ -1,13 +1,22 @@
 import { Container, Nav, Navbar, Modal } from 'react-bootstrap';
 import { Outlet, useNavigate, Link } from 'react-router-dom';
+import { useState, useContext } from 'react';
+import { AuthContext } from './AuthProivder';
+import { getAuth, signOut } from 'firebase/auth';
 
 export default function Header() {
     const navigate = useNavigate();
-    const isLogin = localStorage.getItem('token');
+    const { currentUser } = useContext(AuthContext);
+    const auth = getAuth();
+    const isLogin = !!currentUser;
 
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        navigate('/login')
+    const handleLogout = async() => {
+        try {
+            await signOut(auth);
+            navigate('/');
+        } catch (err) {
+            console.error("Error: ",err);
+        }
     }
 
     return (
@@ -21,9 +30,10 @@ export default function Header() {
                     <Navbar.Collapse id="basic-navbar-nav">
                         <Nav className="ms-auto align-items-center">
                             <Nav.Link as={Link} to='/' active>Home</Nav.Link>
-                            <Nav.Link as={Link} to='/booking' active>Booking</Nav.Link>
+                            <Nav.Link as={Link} to='/courts' active>Find a Court</Nav.Link>
                             {isLogin ? (
                                 <>
+                                    <Nav.Link as={Link} to='/booking' active>My Booking</Nav.Link>
                                     <Nav.Link as={Link} to='/profile' active>Profile</Nav.Link>
                                     <Nav.Link onClick={handleLogout}>Logout</Nav.Link>
                                 </>
