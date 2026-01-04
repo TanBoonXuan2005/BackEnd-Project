@@ -19,23 +19,23 @@ const router = createBrowserRouter([
                 element: <Home/>
             },
             {
-                path: 'bookings/:id',
+                path: '/bookings/:id',
                 element: <BookingPage/>
             },
             {
-                path: 'bookings/edit/:id',
+                path: '/bookings/edit/:id',
                 element: <BookingPage isEditMode={true}/>
             },
             {
-                path: 'courts',
+                path: '/courts',
                 element: <Courts/>
             },
             {
-                path: 'my-bookings',
+                path: '/my-bookings',
                 element: <MyBookings/>
             },
             {
-                path: 'profile',
+                path: '/profile',
                 element: <ProfilePage/>
             },
             {

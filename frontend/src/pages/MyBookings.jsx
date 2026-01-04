@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../components/AuthProivder";
-import { Container, Table, Button, Spinner, Badge, Modal } from "react-bootstrap";
+import { Container, Table, Button, Spinner, Badge, Modal, Row, Col } from "react-bootstrap";
 
 export default function MyBookings() {
     const { currentUser } = useContext(AuthContext);
@@ -72,9 +72,51 @@ export default function MyBookings() {
             ) : (
                 <div className="table-responsive shadow-sm rounded">
                     <Table className="align-middle mb-0 bg-white" hover>
-                        <thead className="bg-light">
-
+                        <thead className="bg-light text-secondary">
+                            <tr>
+                                <th className="ps-4 py-3" style={{ width: '35%' }}>Court Name</th>
+                                <th style={{ width: '15% '}}>Date</th>
+                                <th style={{ width: '15% '}}>Time</th>
+                                <th style={{ width: '15%' }}>Status</th>
+                                <th className="text-end pe-4" style={{ width: '20%' }}>Actions</th>
+                            </tr>
                         </thead>
+
+                        <tbody>
+                            {bookings.map((booking) => ( 
+                                <tr key={booking.id}>
+                                    <td className="ps-4 fw-bold">{booking.title}</td>
+                                    <td>{booking.date}</td>
+                                    <td>{booking.time}</td>
+                                    <td>
+                                        <Badge bg={booking.status === "Booked" ? "success" : "secondary"}>
+                                            {booking.status || "Booked"}
+                                        </Badge>
+                                    </td>
+                                    <td className="text-center">
+                                        <div className="d-flex justify-content-end gap-2">
+                                            <Button 
+                                                variant="secondary" 
+                                                size="sm" 
+                                                style={{ width: '80px' }} 
+                                                onClick={() => navigate(`/bookings/edit/${booking.id}`)}
+                                            >
+                                                <i className="bi bi-pencil-square"></i> Edit
+                                            </Button>
+
+                                            <Button 
+                                                variant="danger" 
+                                                size="sm"
+                                                style={{ width: '90px' }}
+                                                onClick={() => confirmDelete(booking.id)}
+                                            >
+                                                <i className="bi bi-trash"></i> Delete
+                                            </Button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
                     </Table>
                 </div>
             )}

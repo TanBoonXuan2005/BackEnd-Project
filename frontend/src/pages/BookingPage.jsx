@@ -2,7 +2,6 @@ import { Container, Spinner, Col, Row, Card, Form, Button, Alert } from 'react-b
 import { useState, useEffect, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AuthContext } from '../components/AuthProivder';
-import { set } from 'date-fns';
 
 export default function BookingPage({ isEditMode = false }) {
     const [court, setCourt] = useState(null);
@@ -60,8 +59,11 @@ export default function BookingPage({ isEditMode = false }) {
         const today = new Date();
         const currentHour = today.getHours();
 
-        if (currentHour >= court.close_hours) {
-            today.setDate(today.getDate() + 1);
+        if (court && court.close_hours) {
+            const closeHour = parseInt(court.close_hours.split(':')[0]);
+            if (currentHour >= closeHour) {
+                today.setDate(today.getDate() + 1);
+            }
         }
 
         return today.toLocaleDateString('en-CA');
@@ -95,7 +97,7 @@ export default function BookingPage({ isEditMode = false }) {
                 ...prev,
                 name: currentUser.displayName || "",
                 phone_number: currentUser.phoneNumber || "",
-                email: currentUser.email,
+                email: currentUser.email || "",
             }))
         }
         
@@ -116,6 +118,36 @@ export default function BookingPage({ isEditMode = false }) {
         }
     }, [court, formData.date])
 
+    useEffect(() => {
+        fetch('http://localhost:5000/courts')
+            .then(res => res.json())
+            .then(data => {
+                let selectedCourt;
+                if (isEditMode) {
+                    fetch(`http://localhost:5000/bookings/${id}`)
+                        .then(res => res.json())
+                        .then(booking => {
+                            setFormData({
+                                description: booking.description,
+                                phone_number: booking.phone_number,
+                                email: booking.email,
+                                date: booking.date,
+                                time: booking.time,
+                                court_number: booking.court_number,
+                            });
+                            selectedCourt = data.find(court => court.id === booking.court_id);
+                            setCourt(selectedCourt);
+                        })
+                } else {
+                    selectedCourt = data.find(court => court.id === String(id) || court.id === parseInt(id));
+                    setCourt(selectedCourt);
+                }
+            })
+            .catch(err => {
+                console.error("Error: ",err);
+            })
+    }, [id, isEditMode])
+
     const handleChange = (e) => {
         setFormData({
             ...formData,
@@ -130,7 +162,7 @@ export default function BookingPage({ isEditMode = false }) {
             return;
         }
 
-        if (!formData.date || formData.time || !selectedCourtNum) {
+        if (!formData.date || !formData.time || !selectedCourtNum) {
             setStatus({ message: "Please select Date, Time, and Court Number.", variant: "danger" });
             return;
         }
@@ -141,7 +173,7 @@ export default function BookingPage({ isEditMode = false }) {
         }
  
         const bookingData = {
-            court_id: id,
+            court_id: court.id,
             user_id: currentUser.uid,
             title: `${court.name} (Court ${selectedCourtNum})`,
             description: formData.description,
@@ -150,11 +182,12 @@ export default function BookingPage({ isEditMode = false }) {
             date: formData.date,
             time: formData.time,
             status: "Booked",
+            court_number: selectedCourtNum,
         }
 
         const method = isEditMode ? "PUT" : "POST";
         const url = isEditMode 
-            ? `http://localhost:5000/bookings/${id}` 
+            ? `http://localhost:5000/bookings/edit/${id}` 
             : "http://localhost:5000/bookings";
 
         try {
@@ -167,10 +200,10 @@ export default function BookingPage({ isEditMode = false }) {
             });
 
             if (response.ok) {
-                <Alert variant="success" className="mt-3">Booking successful!</Alert>;
-                navigate("/bookings")
+                setStatus({ message: "Booking Successful! Redirecting...", variant: "success" });
+                navigate("/my-bookings")
             } else {
-                <Alert variant="danger" className="mt-3">Booking failed.</Alert>;
+                setStatus({ message: "Booking Failed. Please try again.", variant: "danger" });
             }
                 
         } catch (err) {
@@ -321,7 +354,7 @@ export default function BookingPage({ isEditMode = false }) {
                             <Button
                                 variant="success" 
                                 type="submit" 
-                                disabled={!formData.date || !formData.time || !selectedCourtNum}
+                                disabled={!formData.date || !formData.time || !selectedCourtNum || !formData.name || !formData.phone_number || !formData.email}
                                 className='w-100 rounded-pill fw-bold shadow mt-3'
                                 size="lg"
                             >

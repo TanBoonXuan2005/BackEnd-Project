@@ -41,7 +41,15 @@ app.get("/courts", async (req, res) => {
 // Get all bookings
 app.get("/bookings", async (req, res) => {
   try {
-    const result = await pool.query("SELECT * FROM bookings");
+    const { user_id } = req.query;
+    let query = "SELECT * FROM bookings"
+    let params = []
+    if (user_id) {
+      query += " WHERE user_id = $1"
+      params.push(user_id);
+    }
+
+    const result = await pool.query(query, params);
     res.json(result.rows);
   } catch (error) {
     console.error(error.message);
@@ -49,29 +57,53 @@ app.get("/bookings", async (req, res) => {
   }
 });
 
+// Get a single booking
+app.get("/bookings/:id", async (req, res) => {
+  const client = await pool.connect();
+  const { id } = req.params;
+  try {
+    const query = "SELECT * FROM bookings WHERE id = $1";
+    const result = await client.query(query, [id]);
+    if (result.rowCount === 0) {
+      res.status(404).json({ error: "Booking not found" });
+    }
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  } finally {
+    client.release();
+  }
+})
+
 // Add a new booking
 app.post("/bookings", async (req, res) => {
   const client = await pool.connect();
   try {
-    const startTime = parseInt(req.body.time.split(":")[0])
-    
     const data = {
       title: req.body.title,
       description: req.body.description,
       phone_number: req.body.phone_number,
       date: req.body.date,
       time: req.body.time,
+      email: req.body.email,
       user_id: req.body.user_id,
+      court_number: req.body.court_number,
+      status: req.body.status,
     };
     const query =
-      "INSERT INTO bookings (title, description, phone_number, date, time, user_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *";
+      `INSERT INTO bookings (title, description, date, time, phone_number, email, user_id, court_number, status) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`;
     const values = [
       data.title,
       data.description,
-      data.phone_number,
       data.date,
       data.time,
+      data.phone_number,
+      data.email,
       data.user_id,
+      data.court_number,
+      data.status,
     ];
     const result = await client.query(query, values);
     res.status(201).json(result.rows[0]);
@@ -84,23 +116,29 @@ app.post("/bookings", async (req, res) => {
 });
 
 // Update a booking
-app.put("/bookings/:id", async (req, res) => {
+app.put("/bookings/edit/:id", async (req, res) => {
   const client = await pool.connect();
-  const id = req.params.id;
+  const id = parseInt(req.params.id);
   try {
     const updateQuery =
-      "UPDATE bookings SET title = $1, description = $2, phone_number = $3, date = $4, time = $5 WHERE id = $6 RETURNING *";
+      `UPDATE bookings SET title = $1, description = $2, date = $3, time = $4, phone_number = $5, 
+      email = $6, user_id = $7, court_number = $8, status = $9 WHERE id = $10 RETURNING *`;
+
     const updateData = [
       req.body.title,
       req.body.description,
-      req.body.phone_number,
       req.body.date,
       req.body.time,
-      id,
+      req.body.phone_number,
+      req.body.email,
+      req.body.user_id,
+      req.body.court_number,
+      req.body.status, 
+      id
     ];
     const result = await client.query(updateQuery, updateData);
     if (result.rowCount === 0) {
-      res.status(404).json({ error: "Booking not found" });
+      return res.status(404).json({ error: "Booking not found" });
     }
     console.log("Booking updated successfully");
     res.json(result.rows[0]);
