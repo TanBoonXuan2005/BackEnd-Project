@@ -26,13 +26,24 @@ export default function BookingPage({ isEditMode = false }) {
 
     const navigate = useNavigate();
 
-    const generateTimeSlots = (opening_hours, close_hours) => {
+    const generateTimeSlots = (opening_hours, close_hours, selectedDate) => {
         const slots = [];
+        if (!opening_hours || !close_hours) return slots;
+
         let start = parseInt(opening_hours.split(':')[0]);
         let end = parseInt(close_hours.split(':')[0]);
 
+        const now = new Date();
+        const currentHour = now.getHours();
+
+        const todayStr = now.toLocaleDateString('en-CA')
+        const isToday = selectedDate === todayStr;
+    
+
         for (let i = start; i < end; i += 2) {
             if (i + 2 > end) break;
+
+            if (isToday && i <= currentHour) continue;
 
             const timeStr = i.toString().padStart(2, '0') + ':00';
             const endTimeStr = (i + 2).toString().padStart(2, '0') + ':00';
@@ -43,6 +54,17 @@ export default function BookingPage({ isEditMode = false }) {
             });
         }
         return slots 
+    };
+
+    const getMinDate = () => {
+        const today = new Date();
+        const currentHour = today.getHours();
+
+        if (currentHour >= court.close_hours) {
+            today.setDate(today.getDate() + 1);
+        }
+
+        return today.toLocaleDateString('en-CA');
     };
     
 
@@ -79,6 +101,21 @@ export default function BookingPage({ isEditMode = false }) {
         
     }, [currentUser, id]);
 
+    useEffect(() => {
+        if (court && court.opening_hours && court.close_hours) {
+            const slots = generateTimeSlots(court.opening_hours, court.close_hours, formData.date);
+            setTimeSlots(slots);
+
+            const isTimeValid = slots.some(slot => slot.value === formData.time);
+            if (!isTimeValid && formData.time !== "") {
+                setFormData(prev => ({
+                    ...prev,
+                    time: ""
+                }))
+            }
+        }
+    }, [court, formData.date])
+
     const handleChange = (e) => {
         setFormData({
             ...formData,
@@ -112,7 +149,7 @@ export default function BookingPage({ isEditMode = false }) {
             email: formData.email,
             date: formData.date,
             time: formData.time,
-            status: "booked",
+            status: "Booked",
         }
 
         const method = isEditMode ? "PUT" : "POST";
@@ -187,7 +224,7 @@ export default function BookingPage({ isEditMode = false }) {
                                             name="date" 
                                             value={formData.date} 
                                             onChange={handleChange} 
-                                            min={new Date().toISOString().split("T")[0]}
+                                            min={getMinDate()}
                                             required
                                         />
                                     </Col>
@@ -196,9 +233,12 @@ export default function BookingPage({ isEditMode = false }) {
                                             name="time" 
                                             value={formData.time} 
                                             onChange={handleChange} 
+                                            disabled={!formData.date}
                                             required
                                         >
-                                        <option value="">Select a time slot</option>
+                                        <option value="">
+                                                    {formData.date ? "Select a time slot" : "Select date first"}
+                                                </option>
                                                 {timeSlots.map((slot, index) => (
                                                     <option key={index} value={slot.value}>
                                                         {slot.label}
