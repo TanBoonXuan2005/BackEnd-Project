@@ -3,7 +3,8 @@ import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import {
     createUserWithEmailAndPassword,
-    getAuth,    
+    getAuth,  
+    updateProfile,  
 } from "firebase/auth";
 
 export default function Register() {
@@ -20,7 +21,13 @@ export default function Register() {
         }
 
         try {
-            await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+            const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+            const user = userCredential.user;
+           
+            await updateProfile(user, {
+                displayName: formData.name,
+            });
+
             navigate("/login");
         } catch (err) {
             console.error("Error: ",err);

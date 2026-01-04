@@ -7,6 +7,7 @@ import Header from "./components/Header";
 import ProfilePage from "./pages/ProfilePage";
 import ErrorPage from "./pages/ErrorPage";
 import Courts from "./pages/Courts";
+import MyBookings from "./pages/MyBookings";
 
 const router = createBrowserRouter([
     {
@@ -18,12 +19,20 @@ const router = createBrowserRouter([
                 element: <Home/>
             },
             {
-                path: 'booking',
+                path: 'bookings/:id',
                 element: <BookingPage/>
+            },
+            {
+                path: 'bookings/edit/:id',
+                element: <BookingPage isEditMode={true}/>
             },
             {
                 path: 'courts',
                 element: <Courts/>
+            },
+            {
+                path: 'my-bookings',
+                element: <MyBookings/>
             },
             {
                 path: 'profile',

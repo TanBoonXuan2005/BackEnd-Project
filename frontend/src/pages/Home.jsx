@@ -58,7 +58,7 @@ export default function Home() {
 
          <div className="d-flex justify-content-between align-items-center mb-4 mt-5">
             <h3 className="fw-bold m-0">🔥 Trending Courts</h3>
-            <Link to="/courts" className="text-decoration-none fw-bold">View All Projects &rarr;</Link>
+            <Link to="/courts" className="text-decoration-none fw-bold">View All Courts &rarr;</Link>
          </div>
          
          <div className="d-flex flex-column gap-4">
@@ -103,7 +103,7 @@ export default function Home() {
                                     RM{court.price_per_hour} <span className="fs-6 text-muted">/hr</span>
                                  </div>
                               </div>
-                              <Button as={Link} to="/booking" variant="outline-dark" className="rounded-pill px-4">
+                              <Button as={Link} to={`/bookings/${court.id}`} variant="outline-dark" className="rounded-pill px-4">
                                  <i className="bi bi-arrow-right"></i> Book Court
                               </Button>
                            </div>

@@ -33,7 +33,7 @@ export default function Courts() {
     return (
         <Container className="py-5">
             <div className="text-center mb-5">
-                <h1 className="fw-bold display-5">Find Your Courts</h1>
+                <h1 className="fw-bold display-5 text-primary">Find Your Courts</h1>
                 <p className="text-muted">Browse all our premium locations</p>
             </div>
             <Row>
@@ -82,7 +82,7 @@ export default function Courts() {
                                     <div className="mt-3">
                                         <Button 
                                             as={Link} 
-                                            to={`/booking/${court.id}`} 
+                                            to={`/bookings/${court.id}`} 
                                             variant="dark" 
                                             className="w-100 rounded-pill"
                                         >
