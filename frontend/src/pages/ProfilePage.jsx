@@ -18,6 +18,7 @@ export default function ProfilePage() {
     const [invalidUrl, setInvalidUrl] = useState(false);
 
     const [profileImage, setProfileImage] = useState(currentUser.photoURL || '');
+    const [imageError, setImageError] = useState(false);
     const [backgroundImage, setBackgroundImage] = useState(
         localStorage.getItem(`bg_${currentUser.uid}`) || ''
     );
@@ -107,12 +108,12 @@ export default function ProfilePage() {
                         <Card.Body className="text-center p-4 pt-0">
                             <div className="position-relative d-inline-block" style={{marginTop: '-70px'}}>
                                 <div>
-                                    {profileImage ? (
+                                    {!imageError && profileImage ? (
                                     <Image 
                                         src={profileImage} 
                                         roundedCircle 
                                         style={{ width: "140px", height: "140px", objectFit: "cover", border: "5px solid white" }}
-                                        onError={(e) => e.target.style.display = 'none'}
+                                        onError={() => setImageError(true)}
                                     />
                                     ) : (
                                         <div 

@@ -41,9 +41,16 @@ export default function MyBookings() {
 
     const handleDelete = async() => {
         try {
-            await fetch(`http://localhost:5000/bookings/${selectedBookingId}`, {
+            const response = await fetch(`http://localhost:5000/bookings/${selectedBookingId}`, {
                 method: "DELETE",
             });
+
+            if (response.ok) {
+                setBookings(prevBookings => prevBookings.filter(booking => booking.id !== selectedBookingId));
+                setShowDeleteModal(false);
+            } else {
+                console.error("Failed to delete booking");
+            }
         } catch (err) {
             console.error("Error: ",err);
         }

@@ -90,10 +90,11 @@ app.post("/bookings", async (req, res) => {
       user_id: req.body.user_id,
       court_number: req.body.court_number,
       status: req.body.status,
+      name: req.body.name,
     };
     const query =
-      `INSERT INTO bookings (title, description, date, time, phone_number, email, user_id, court_number, status) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`;
+      `INSERT INTO bookings (title, description, date, time, phone_number, email, user_id, court_number, status, name) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`;
     const values = [
       data.title,
       data.description,
@@ -104,6 +105,7 @@ app.post("/bookings", async (req, res) => {
       data.user_id,
       data.court_number,
       data.status,
+      data.name,
     ];
     const result = await client.query(query, values);
     res.status(201).json(result.rows[0]);
@@ -122,7 +124,7 @@ app.put("/bookings/edit/:id", async (req, res) => {
   try {
     const updateQuery =
       `UPDATE bookings SET title = $1, description = $2, date = $3, time = $4, phone_number = $5, 
-      email = $6, user_id = $7, court_number = $8, status = $9 WHERE id = $10 RETURNING *`;
+      email = $6, user_id = $7, court_number = $8, status = $9, name = $10 WHERE id = $11 RETURNING *`;
 
     const updateData = [
       req.body.title,
@@ -134,6 +136,7 @@ app.put("/bookings/edit/:id", async (req, res) => {
       req.body.user_id,
       req.body.court_number,
       req.body.status, 
+      req.body.name,
       id
     ];
     const result = await client.query(updateQuery, updateData);

@@ -8,7 +8,7 @@ export default function Header() {
     const navigate = useNavigate();
     const { currentUser } = useContext(AuthContext);
     const auth = getAuth();
-    const userProfileImage = currentUser?.photoURL || null;
+    const userProfileImage = currentUser?.photoURL;
     const userBackgroundImage = currentUser?.background || null;
     const [showModal, setShowModal] = useState(false);
 
@@ -37,7 +37,7 @@ export default function Header() {
             <Navbar bg="dark" variant="dark" expand="lg" sticky='top' className="shadow-sm mb-4 py-3">
                 <Container>
                     <Navbar.Brand as={Link} to='/'>
-                        <img src="" alt="" />Badminton Pro
+                        Badminton Pro
                     </Navbar.Brand>
                     <Navbar.Toggle aria-controls="basic-navbar-nav" />
                     <Navbar.Collapse id="basic-navbar-nav">

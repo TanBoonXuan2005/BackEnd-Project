@@ -20,7 +20,8 @@ export default function BookingPage({ isEditMode = false }) {
         phone_number: "",
         email: "",
         date: "",
-        time: ""
+        time: "",
+        name: "",
     });
 
     const navigate = useNavigate();
@@ -71,10 +72,18 @@ export default function BookingPage({ isEditMode = false }) {
     
 
     useEffect(() => {
+        if (isEditMode) return;
+
         fetch("http://localhost:5000/courts")
             .then((res) => res.json())
             .then(data => {
                 const selectedCourt  = data.find(court => court.id === String(id) || court.id === parseInt(id));
+
+                if (!selectedCourt) {
+                    console.error("Court not found");
+                    setLoading(false);
+                    return 
+                }
                 setCourt(selectedCourt);
 
                 const count = selectedCourt.total_courts;
@@ -104,6 +113,11 @@ export default function BookingPage({ isEditMode = false }) {
     }, [currentUser, id]);
 
     useEffect(() => {
+        if (court) {
+            const count = court.total_courts;
+            setCourts(Array.from({ length: count }, (_, index) => index + 1));
+        }
+
         if (court && court.opening_hours && court.close_hours) {
             const slots = generateTimeSlots(court.opening_hours, court.close_hours, formData.date);
             setTimeSlots(slots);
@@ -119,29 +133,36 @@ export default function BookingPage({ isEditMode = false }) {
     }, [court, formData.date])
 
     useEffect(() => {
+        if (!isEditMode) return;
+
         fetch('http://localhost:5000/courts')
             .then(res => res.json())
             .then(data => {
                 let selectedCourt;
-                if (isEditMode) {
-                    fetch(`http://localhost:5000/bookings/${id}`)
-                        .then(res => res.json())
-                        .then(booking => {
-                            setFormData({
-                                description: booking.description,
-                                phone_number: booking.phone_number,
-                                email: booking.email,
-                                date: booking.date,
-                                time: booking.time,
-                                court_number: booking.court_number,
-                            });
-                            selectedCourt = data.find(court => court.id === booking.court_id);
+                fetch(`http://localhost:5000/bookings/${id}`)
+                    .then(res => res.json())
+                    .then(booking => {
+                        setFormData({
+                            description: booking.description,
+                            phone_number: booking.phone_number,
+                            email: booking.email,
+                            date: booking.date.split('T')[0],
+                            time: booking.time,
+                            court_number: booking.court_number,
+                            name: booking.name,
+                        });
+                        setSelectedCourtNum(parseInt(booking.court_number));
+                        const courtName = booking.title.split(' (Court')[0];
+                        selectedCourt = data.find(court => court.name === courtName);
+                        
+                        if (selectedCourt) {
                             setCourt(selectedCourt);
-                        })
-                } else {
-                    selectedCourt = data.find(court => court.id === String(id) || court.id === parseInt(id));
-                    setCourt(selectedCourt);
-                }
+                        } else {
+                            console.error("Court not found");
+                        }
+
+                        setLoading(false);
+                    })                
             })
             .catch(err => {
                 console.error("Error: ",err);
@@ -183,6 +204,7 @@ export default function BookingPage({ isEditMode = false }) {
             time: formData.time,
             status: "Booked",
             court_number: selectedCourtNum,
+            name: formData.name,
         }
 
         const method = isEditMode ? "PUT" : "POST";
@@ -358,9 +380,11 @@ export default function BookingPage({ isEditMode = false }) {
                                 className='w-100 rounded-pill fw-bold shadow mt-3'
                                 size="lg"
                             >
-                                {formData.date && formData.time && selectedCourtNum 
-                                    ? `Confirm Booking ${court.name} (Court ${selectedCourtNum})` 
-                                    : "Complete All Steps to Book"
+                                {isEditMode 
+                                    ? "Save changes" 
+                                    : (formData.date && formData.time && selectedCourtNum 
+                                        ? `Confirm Booking ${court.name} (Court ${selectedCourtNum})` 
+                                        : "Complete All Steps to Book")
                                 }
                             </Button>
                         </Form>
