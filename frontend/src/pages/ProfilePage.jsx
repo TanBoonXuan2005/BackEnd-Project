@@ -31,9 +31,11 @@ export default function ProfilePage() {
     const [bookingStats, setBookingStats] = useState({ total: 0, booked: 0, spent: 0 });
     const [loadingStats, setLoadingStats] = useState(true);
 
+    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
     useEffect(() => {
         if (currentUser) {
-            fetch(`http://localhost:5000/bookings?user_id=${currentUser.uid}`)
+            fetch(`${API_URL}/bookings?user_id=${currentUser.uid}`)
                 .then((res) => res.json())
                 .then((data) => {
                     const sortedData = data.sort((a, b) => b.id - a.id)

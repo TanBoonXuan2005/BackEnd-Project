@@ -13,8 +13,10 @@ export default function Courts() {
 
     const [showLoginModal, setShowLoginModal] = useState(false);
 
+    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
     useEffect(() => {
-        fetch("http://localhost:5000/courts")
+        fetch(`${API_URL}/courts`)
             .then((res) => res.json())
             .then((data) => {
                 setCourts(data);
