@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useContext } from "react";
-import { AuthContext } from "../components/AuthProivder";
+import { AuthContext } from "../components/AuthProvider";
 import { Container, Table, Button, Spinner, Badge, Modal } from "react-bootstrap";
 
 export default function MyBookings() {

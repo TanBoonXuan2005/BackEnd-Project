@@ -1,6 +1,6 @@
 import { Container, Row, Card, Col, Button, Image, Form, Alert, Modal, Spinner } from "react-bootstrap";
 import { useState, useEffect, useContext } from "react";
-import { AuthContext } from "../components/AuthProivder";
+import { AuthContext } from "../components/AuthProvider";
 import { updateProfile } from "firebase/auth";
 import {  ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../firebase";

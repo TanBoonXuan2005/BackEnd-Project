@@ -1,7 +1,7 @@
 import { Container, Spinner, Col, Row, Card, Form, Button, Alert } from 'react-bootstrap';
 import { useState, useEffect, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { AuthContext } from '../components/AuthProivder';
+import { AuthContext } from '../components/AuthProvider';
 
 export default function BookingPage({ isEditMode = false }) {
     const [court, setCourt] = useState(null);
@@ -168,6 +168,10 @@ export default function BookingPage({ isEditMode = false }) {
                 console.error("Error: ",err);
             })
     }, [id, isEditMode])
+
+    useEffect(() => {
+        
+    })
 
     const handleChange = (e) => {
         setFormData({

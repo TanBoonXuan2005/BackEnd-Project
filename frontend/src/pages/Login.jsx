@@ -7,11 +7,11 @@ import {
     getAuth,
     signInWithEmailAndPassword,
 } from "firebase/auth";
-import { AuthContext } from "../components/AuthProivder";
+import { AuthContext } from "../components/AuthProvider";
 
 export default function Login() {
     const navigate = useNavigate();
-    const loginImage = "";
+    const loginImage = "https://media.gettyimages.com/id/108860379/photo/lee-chong-wei-of-malaysia-leaps-to-smash.jpg?s=1024x1024&w=gi&k=20&c=EOk-g7jzkBDEHmUKbIPtfN35XaR30vuMdgCWuNsJJ3M=";
     const auth = getAuth();
     const provider = new GoogleAuthProvider();
     const { currentUser } = useContext(AuthContext);

@@ -1,7 +1,7 @@
 import { Container, Nav, Navbar, Modal, Image, NavDropdown, Button } from 'react-bootstrap';
 import { Outlet, useNavigate, Link } from 'react-router-dom';
 import { useState, useContext } from 'react';
-import { AuthContext } from './AuthProivder';
+import { AuthContext } from './AuthProvider';
 import { getAuth, signOut } from 'firebase/auth';
 
 export default function Header() {

@@ -1,12 +1,17 @@
-import { Container, Row, Col, Card, Image, Button, Form, Spinner } from "react-bootstrap"
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Container, Row, Col, Card, Image, Button, Form, Spinner, Alert, Modal } from "react-bootstrap"
+import { useState, useEffect, useContext } from "react";
 import { motion } from 'framer-motion';
+import { AuthContext } from "../components/AuthProvider";
+import { useNavigate } from "react-router-dom";
 
 export default function Courts() {
     const [courts, setCourts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
+    const { currentUser } = useContext(AuthContext);
+    const navigate = useNavigate();
+
+    const [showLoginModal, setShowLoginModal] = useState(false);
 
     useEffect(() => {
         fetch("http://localhost:5000/courts")
@@ -20,6 +25,19 @@ export default function Courts() {
                 setLoading(false);
             });
     }, []);
+
+    const handleBook = (courtId) => {
+        if (!currentUser) {
+            setShowLoginModal(true);
+        } else {
+            navigate(`/bookings/${courtId}`);
+        }
+    }
+
+    const handleNavigation = (path) => {
+        setShowLoginModal(false);
+        navigate(path);
+    }
     
     if (loading) {
         return (
@@ -81,10 +99,9 @@ export default function Courts() {
                                     </div>
                                     <div className="mt-3">
                                         <Button 
-                                            as={Link} 
-                                            to={`/bookings/${court.id}`} 
                                             variant="dark" 
                                             className="w-100 rounded-pill"
+                                            onClick={() => handleBook(court.id)}
                                         >
                                             <i className="bi bi-arrow-right"></i> Book Court
                                         </Button>
@@ -95,6 +112,34 @@ export default function Courts() {
                     </Col>
                 ))} 
             </Row>
+            <Modal show={showLoginModal} onHide={() => setShowLoginModal(false)} centered>
+                <Modal.Header closeButton>
+                    <Modal.Title className="fw-bold">Login Required</Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="text-center py-4">
+                    <div className="mb-3">
+                        <i className="bi bi-shield-lock text-primary" style={{ fontSize: "3rem" }}></i>
+                    </div>
+                    <h5>You need to be logged in to book a court</h5>
+                    <p className="text-muted">Please sign in to your account or create a new one to continue with your booking.</p>
+                </Modal.Body>
+                <Modal.Footer className="justify-content-center border-0 pb-4">
+                    <Button 
+                        variant="outline-secondary" 
+                        className="rounded-pill px-4"
+                        onClick={() => handleNavigation("/register")}
+                    >
+                        Register
+                    </Button>
+                    <Button 
+                        variant="primary" 
+                        className="rounded-pill px-4"
+                        onClick={() => handleNavigation("/login")}
+                    >
+                        Login
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </Container>
     )
 }

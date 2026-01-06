@@ -9,7 +9,7 @@ import {
 
 export default function Register() {
     const navigate = useNavigate();
-    const registerImage = "";
+    const registerImage = "https://sfycdn.speedsize.com/8140516e-7833-475e-b70f-6e943a98adee/https://badmintonhq.co.uk/cdn/shop/articles/123.jpg?v=1704207657";
     const auth = getAuth();
 
     const handleRegister = async(e) => {
