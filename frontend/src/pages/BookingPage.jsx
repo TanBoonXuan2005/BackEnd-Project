@@ -27,7 +27,7 @@ export default function BookingPage({ isEditMode = false }) {
     const [bookedSlots, setBookedSlots] = useState([]);
 
     const navigate = useNavigate();
-    const API_URL = "https://d10e9d95-6bbe-4d0c-8311-74fa2696ea73-00-7eskpyazezps.sisko.replit.dev:5000" || "http://localhost:5000";
+    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 
     const generateTimeSlots = (opening_hours, close_hours, selectedDate) => {
