@@ -26,7 +26,7 @@ export default function Courts() {
                 console.error("Error: ",err);
                 setLoading(false);
             });
-    }, []);
+    }, [API_URL]);
 
     const handleBook = (courtId) => {
         if (!currentUser) {
