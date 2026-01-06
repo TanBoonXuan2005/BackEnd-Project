@@ -1,6 +1,6 @@
 import { Col, Row, Image, Form, Button, Container } from "react-bootstrap";
 import { useNavigate } from 'react-router-dom';
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
     GoogleAuthProvider,
     signInWithPopup,
@@ -15,6 +15,8 @@ export default function Login() {
     const auth = getAuth();
     const provider = new GoogleAuthProvider();
     const { currentUser } = useContext(AuthContext);
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
 
     useEffect(() => {
         if (currentUser) {
@@ -63,12 +65,24 @@ export default function Login() {
                         <Form onSubmit={handleLogin}>
                             <Form.Group className="mb-3">
                                 <Form.Label className="fw-semibold">Email Address</Form.Label>
-                                <Form.Control type="email" placeholder="name@example.com" required />
+                                <Form.Control 
+                                    type="email" 
+                                    value={email} 
+                                    onChange={(e) => setEmail(e.target.value)} 
+                                    placeholder="name@example.com" 
+                                    required 
+                                />
                             </Form.Group>
 
                             <Form.Group className="mb-4">
                                 <Form.Label className="fw-semibold">Password</Form.Label>
-                                <Form.Control type="password" placeholder="Enter your password" required />
+                                <Form.Control 
+                                    value={password} 
+                                    onChange={(e) => setPassword(e.target.value)} 
+                                    type="password" 
+                                    placeholder="Enter your password" 
+                                    required 
+                                />
                             </Form.Group>
 
                             <Button 

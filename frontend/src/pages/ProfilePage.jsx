@@ -1,8 +1,8 @@
-import { Container, Row, Card, Col, Button, Image, Form, Alert, Modal, Spinner } from "react-bootstrap";
+import { Container, Row, Card, Col, Button, Image, Form, Badge, Modal, Spinner, ListGroup, Alert } from "react-bootstrap";
 import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../components/AuthProvider";
 import { updateProfile } from "firebase/auth";
-import {  ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../firebase";
 
 export default function ProfilePage() {
@@ -11,10 +11,6 @@ export default function ProfilePage() {
     // State
     const [name, setName] = useState(currentUser.displayName || "User");
     const [email, setEmail] = useState(currentUser.email);
-
-    const [backgroundUrl, setBackgroundUrl] = useState(
-        localStorage.getItem(`bg_${currentUser.uid}`) || ''
-    );
 
     const [imageFile, setImageFile] = useState(null);
     const [backgroundFile, setBackgroundFile] = useState(null);
@@ -31,6 +27,7 @@ export default function ProfilePage() {
     const [showMessageModal, setShowMessageModal] = useState(false);
     
     // Stats
+    const [bookings, setBookings] = useState([]);
     const [bookingStats, setBookingStats] = useState({ total: 0, booked: 0, spent: 0 });
     const [loadingStats, setLoadingStats] = useState(true);
 
@@ -39,9 +36,11 @@ export default function ProfilePage() {
             fetch(`http://localhost:5000/bookings?user_id=${currentUser.uid}`)
                 .then((res) => res.json())
                 .then((data) => {
+                    const sortedData = data.sort((a, b) => b.id - a.id)
+                    setBookings(sortedData);
                     const total = data.length;
                     const booked = data.filter((booking) => booking.status === "booked").length;
-                    const spent = total * 20;
+                    const spent = data.reduce((acc, curr) => acc + parseFloat(curr.total_price), 0)
                     setBookingStats({ total, booked, spent });
                     setLoadingStats(false);
                 })
@@ -92,9 +91,8 @@ export default function ProfilePage() {
             const newBackgroundUrl = await getDownloadURL(storageRef);
             
             localStorage.setItem(`bg_${currentUser.uid}`, newBackgroundUrl);
-            setBackgroundImage(backgroundUrl);
+            setBackgroundImage(newBackgroundUrl);
             setShowBackgroundImageModal(false);
-            setBackgroundUrl(null);
             showNotification("Background picture updated!", "success")
         } catch (err) {
             showNotification("Something went wrong!", "error")
@@ -169,36 +167,86 @@ export default function ProfilePage() {
                             </div>
 
                             <h3 className="fw-bold">{name || "User"}</h3>
-                            <p className="text-muted mb-4">Badminton Pro Member</p>
+                            <p className="text-muted">{email}</p>
+                            <Badge bg="info" className="mt-2 px-3 py-2 rounded-pill">Badminton Pro Member</Badge>
                         </Card.Body>
                     </Card>
                 </Col>
             </Row>
-            <h3>Booking History</h3>
-            <Row className="justify-content-center my-5">
-                <Col md={3} sm={6}>
-                    <Card className="text-center h-100 shadow-sm border-primary">
-                        <Card.Body>
-                            <h1 className="display-4 fw-bold text-primary">{bookingStats.total}</h1>
-                            <Card.Text className="text-muted fw-semibold">Total Bookings</Card.Text>
+            
+            <Row className="justify-content-center mb-5 g-4">
+                <Col md={4} lg={3}>
+                    <Card className="h-100 shadow-sm border-0 bg-primary text-white rounded-4">
+                        <Card.Body className="text-center py-4">
+                            <div className="fs-1 mb-2">
+                                <i className="bi bi-calendar-check"></i>
+                            </div>
+                            <h3 className="display-5 fw-bold mb-0">{bookingStats.total}</h3>
+                            <p className="mb-0 opacity-75">Total Bookings</p>
                         </Card.Body>
                     </Card>
                 </Col>
-                <Col md={3} sm={6}>
-                    <Card className="text-center h-100 shadow-sm border-primary">
-                        <Card.Body>
-                            <h1 className="display-4 fw-bold text-danger">RM {bookingStats.spent}</h1>
-                            <Card.Text className="text-muted fw-semibold">Total spent</Card.Text>
+                <Col md={4} lg={3}>
+                    <Card className="h-100 shadow-sm border-0 bg-danger text-white rounded-4">
+                        <Card.Body className="text-center py-4">
+                            <div className="fs-1 mb-2">
+                                <i className="bi bi-wallet2"></i>
+                            </div>
+                            <h3 className="display-5 fw-bold mb-0">RM {bookingStats.spent}</h3>
+                            <p className="mb-0 opacity-75">Total Spent</p>
                         </Card.Body>
                     </Card>
                 </Col>
-                <Col md={3} sm={6}>
-                    <Card className="text-center h-100 shadow-sm border-primary">
-                        <Card.Body>
-                            <h1 className="display-4 fw-bold text-success">{bookingStats.booked}</h1>
-                            <Card.Text className="text-muted fw-semibold">Total booked</Card.Text>
+                <Col md={4} lg={3}>
+                    <Card className="h-100 shadow-sm border-0 bg-success text-white rounded-4">
+                        <Card.Body className="text-center py-4">
+                            <div className="fs-1 mb-2">
+                                <i className="bi bi-check-circle"></i>
+                            </div>
+                            <h3 className="display-5 fw-bold mb-0">{bookingStats.booked}</h3>
+                            <p className="mb-0 opacity-75">Active Bookings</p>
                         </Card.Body>
                     </Card>
+                </Col>
+            </Row>
+
+            <Row className="justify-content-center">
+                <Col lg={10}>
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                        <h4 className="fw-bold">🏸 Recent Activity</h4>
+                    </div>
+                    
+                    {bookings.length > 0 ? (
+                        <ListGroup className="shadow-sm rounded-4 overflow-hidden">
+                            {bookings.slice(0, 3).map((booking, index) => (
+                                <ListGroup.Item key={index} className="p-4 border-0 border-bottom d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h5 className="fw-bold mb-1">
+                                            {booking.title}
+                                        </h5>
+                                        <p className="text-muted mb-0 small">
+                                            <i className="bi bi-clock me-1"></i> 
+                                            {booking.date.split('T')[0]} • {booking.time}
+                                        </p>
+                                    </div>
+                                    <div className="text-end">
+                                        <h5 className="text-primary fw-bold mb-1">
+                                            RM {booking.total_price ? parseFloat(booking.total_price).toFixed(2) : "0.00"}
+                                        </h5>
+                                        <Badge bg="success" text="white" className="border">
+                                            {booking.status || "Completed"}
+                                        </Badge>
+                                    </div>
+                                </ListGroup.Item>
+                            ))}
+                        </ListGroup>
+                    ) : (
+                        <Alert variant="light" className="text-center py-5 shadow-sm border-0">
+                            <div className="fs-1 text-muted mb-"><i className="bi bi-emoji-frown"></i></div>
+                            <h5 className="mb-3">No bookings yet</h5>
+                            <Button variant="primary" href="/courts">Find a Court</Button>
+                        </Alert>
+                    )}
                 </Col>
             </Row>
 

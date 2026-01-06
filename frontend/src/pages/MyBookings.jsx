@@ -138,7 +138,9 @@ export default function MyBookings() {
                         <tbody>
                             {upcomingBookings.map((booking) => ( 
                                 <tr key={booking.id}>
-                                    <td className="ps-4 fw-bold text-secondary">{booking.title}</td>
+                                    <td className="ps-4 fw-bold text-secondary">
+                                        {booking.title} 
+                                    </td>
                                     <td>{booking.date}</td>
                                     <td>{booking.time}</td>
                                     <td>

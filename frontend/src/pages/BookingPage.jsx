@@ -24,6 +24,8 @@ export default function BookingPage({ isEditMode = false }) {
         name: "",
     });
 
+    const [bookedSlots, setBookedSlots] = useState([]);
+
     const navigate = useNavigate();
 
     const generateTimeSlots = (opening_hours, close_hours, selectedDate) => {
@@ -170,8 +172,17 @@ export default function BookingPage({ isEditMode = false }) {
     }, [id, isEditMode])
 
     useEffect(() => {
-        
-    })
+        if (court && formData.date) {
+            fetch(`http://localhost:5000/bookings?court_id=${court.id}&date=${formData.date}`)
+                .then(res => res.json())
+                .then(data => {
+                    setBookedSlots(data);
+                })
+                .catch(err => {
+                    console.error("Error: ",err);
+                })
+        }
+    }, [court, formData.date])
 
     const handleChange = (e) => {
         setFormData({
@@ -201,7 +212,6 @@ export default function BookingPage({ isEditMode = false }) {
             court_id: court.id,
             user_id: currentUser.uid,
             title: `${court.name} (Court ${selectedCourtNum})`,
-            description: formData.description,
             phone_number: formData.phone_number,
             email: formData.email,
             date: formData.date,
@@ -209,6 +219,7 @@ export default function BookingPage({ isEditMode = false }) {
             status: "Booked",
             court_number: selectedCourtNum,
             name: formData.name,
+
         }
 
         const method = isEditMode ? "PUT" : "POST";
@@ -320,19 +331,31 @@ export default function BookingPage({ isEditMode = false }) {
                                     </div>
                                 )}
                                 <div className='d-flex flex-wrap gap-3'>
-                                    {courts.map((num) => (
-                                        <Button 
-                                            key={num}
-                                            disabled={!formData.time || !formData.date}
-                                            variant={selectedCourtNum === num ? "primary" : "outline-secondary"}
-                                            className="rounded-3 d-flex flex-column align-items-center justify-content-center shadow-sm"
-                                            style={{ width: "80px", height: "70px" }}
-                                            onClick={() => setSelectedCourtNum(num)}
-                                        >
-                                            <span className="small text-uppercase" style={{fontSize: '0.7rem'}}>Court</span>
-                                            <span className="fw-bold fs-4">{num}</span>
-                                        </Button>
-                                    ))}
+                                    {courts.map((num) => {
+                                        const isBooked = bookedSlots
+                                        .some(booking => parseInt(booking.court_number) === num 
+                                            && booking.time === formData.time
+                                    );
+
+                                        return (
+                                            <Button 
+                                                key={num}
+                                                disabled={!formData.time || !formData.date || isBooked}
+                                                variant={selectedCourtNum === num ? "primary" : "outline-secondary"}
+                                                className="rounded-3 d-flex flex-column align-items-center justify-content-center shadow-sm"
+                                                style={{ width: "80px", height: "70px" }}
+                                                onClick={() => setSelectedCourtNum(num)}
+                                            >
+                                                <span className="small text-uppercase" style={{fontSize: '0.7rem'}}>
+                                                    {isBooked ? "Booked" : "Court"}
+                                                </span>
+                                                <span className="fw-bold fs-4">
+                                                    {isBooked ? <i className="bi bi-x-circle-fill"></i> : num}
+                                                </span>
+                                            </Button>
+                                            
+                                        )
+                                    })}
                                 </div>
                             </Form.Group>
 

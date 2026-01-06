@@ -1,15 +1,18 @@
 import { Container, Nav, Navbar, Modal, Image, NavDropdown, Button } from 'react-bootstrap';
 import { Outlet, useNavigate, Link } from 'react-router-dom';
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { AuthContext } from './AuthProvider';
 import { getAuth, signOut } from 'firebase/auth';
+import { storage } from '../firebase';
+import { ref, getDownloadURL } from "firebase/storage";
+import logoImg from '../assets/logo.jpg';
 
 export default function Header() {
     const navigate = useNavigate();
     const { currentUser } = useContext(AuthContext);
     const auth = getAuth();
     const userProfileImage = currentUser?.photoURL;
-    const userBackgroundImage = currentUser?.background || null;
+    const [userBackgroundImage, setUserBackgroundImage] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [imageError, setImageError] = useState(false);
 
@@ -31,14 +34,38 @@ export default function Header() {
         setShowModal(false);
     }
 
+    const fetchBackgroundImage = async() => {
+        try {
+            const backgroundRef = ref(storage, `background_images/${currentUser.uid}`);
+            const backgroundUrl = await getDownloadURL(backgroundRef);
+            setUserBackgroundImage(backgroundUrl);
+        } catch (err) {
+            console.error("Error: ",err);
+        }
+    }
 
+    useEffect(() => {
+        if (currentUser) {
+            fetchBackgroundImage();
+        } else {
+            setUserBackgroundImage(null)
+        }
+    }, [currentUser])
 
     return (
         <>
             <Navbar bg="dark" variant="dark" expand="lg" sticky='top' className="shadow-sm mb-4 py-3">
                 <Container>
-                    <Navbar.Brand as={Link} to='/'>
-                        Badminton Pro
+                    <Navbar.Brand as={Link} to='/' className="d-flex align-items-center">
+                        <img 
+                            src={logoImg} 
+                            alt="Badminton pro logo"
+                            width="auto"
+                            height="50"
+                            className="d-inline-block"
+                            style={{ maxHeight: "60px" }}
+                        /> 
+                        <span className='ms-2'>Badminton Pro</span>
                     </Navbar.Brand>
                     <Navbar.Toggle aria-controls="basic-navbar-nav" />
                     <Navbar.Collapse id="basic-navbar-nav">
@@ -86,7 +113,7 @@ export default function Header() {
                                                     style={{ 
                                                         height: "100px", 
                                                         backgroundColor: "rgba(222, 226, 230, 1)",
-                                                        backgroundImage: `url(${userBackgroundImage})`,
+                                                        backgroundImage: userBackgroundImage ? `url(${userBackgroundImage})` : '',
                                                         backgroundSize: "cover",
                                                         backgroundPosition: "center"
                                                     }}
