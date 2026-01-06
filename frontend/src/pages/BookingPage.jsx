@@ -27,6 +27,8 @@ export default function BookingPage({ isEditMode = false }) {
     const [bookedSlots, setBookedSlots] = useState([]);
 
     const navigate = useNavigate();
+    const API_URL = "https://back-end-project-pw5g.vercel.app" || "http://localhost:5000";
+
 
     const generateTimeSlots = (opening_hours, close_hours, selectedDate) => {
         const slots = [];
@@ -76,7 +78,7 @@ export default function BookingPage({ isEditMode = false }) {
     useEffect(() => {
         if (isEditMode) return;
 
-        fetch("http://localhost:5000/courts")
+        fetch(`${API_URL}/courts`)
             .then((res) => res.json())
             .then(data => {
                 const selectedCourt  = data.find(court => court.id === String(id) || court.id === parseInt(id));
@@ -137,11 +139,11 @@ export default function BookingPage({ isEditMode = false }) {
     useEffect(() => {
         if (!isEditMode) return;
 
-        fetch('http://localhost:5000/courts')
+        fetch(`${API_URL}/courts`)
             .then(res => res.json())
             .then(data => {
                 let selectedCourt;
-                fetch(`http://localhost:5000/bookings/${id}`)
+                fetch(`${API_URL}/bookings/${id}`)
                     .then(res => res.json())
                     .then(booking => {
                         setFormData({
@@ -173,7 +175,7 @@ export default function BookingPage({ isEditMode = false }) {
 
     useEffect(() => {
         if (court && formData.date) {
-            fetch(`http://localhost:5000/bookings?court_id=${court.id}&date=${formData.date}`)
+            fetch(`${API_URL}/bookings?court_id=${court.id}&date=${formData.date}`)
                 .then(res => res.json())
                 .then(data => {
                     setBookedSlots(data);
@@ -224,8 +226,8 @@ export default function BookingPage({ isEditMode = false }) {
 
         const method = isEditMode ? "PUT" : "POST";
         const url = isEditMode 
-            ? `http://localhost:5000/bookings/edit/${id}` 
-            : "http://localhost:5000/bookings";
+            ? `${API_URL}/bookings/edit/${id}` 
+            : `${API_URL}/bookings`;
 
         try {
             const response = await fetch(url, {

@@ -12,11 +12,13 @@ export default function MyBookings() {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedBookingId, setSelectedBookingId] = useState(null);
 
+    const API_URL = "https://back-end-project-pw5g.vercel.app" || "http://localhost:5000";
+
     const fetchBookings = async() => {
         if (!currentUser) return;
 
         try {
-            const response = await fetch(`http://localhost:5000/bookings?user_id=${currentUser.uid}`);
+            const response = await fetch(`${API_URL}/bookings?user_id=${currentUser.uid}`);
             const data = await response.json();
 
             setBookings(data);
@@ -42,7 +44,7 @@ export default function MyBookings() {
 
     const handleDelete = async() => {
         try {
-            const response = await fetch(`http://localhost:5000/bookings/${selectedBookingId}`, {
+            const response = await fetch(`${API_URL}/bookings/${selectedBookingId}`, {
                 method: "DELETE",
             });
 
