@@ -7,8 +7,10 @@ export default function Home() {
    const [courts, setCourts] = useState([]);
    const [loading, setLoading] = useState(true);
 
+   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
    useEffect(() => {
-      fetch("http://localhost:5000/courts")
+      fetch(`${API_URL}/courts`)
          .then((res) => res.json())
          .then((data) => {
             setCourts(data);
