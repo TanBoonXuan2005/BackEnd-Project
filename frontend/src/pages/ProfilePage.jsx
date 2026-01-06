@@ -1,7 +1,9 @@
-import { Container, Row, Card, Col, Button, Image, Form, Alert, Modal, InputGroup } from "react-bootstrap";
+import { Container, Row, Card, Col, Button, Image, Form, Alert, Modal, Spinner } from "react-bootstrap";
 import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../components/AuthProivder";
 import { updateProfile } from "firebase/auth";
+import {  ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "../firebase";
 
 export default function ProfilePage() {
     const { currentUser } = useContext(AuthContext);
@@ -14,8 +16,8 @@ export default function ProfilePage() {
         localStorage.getItem(`bg_${currentUser.uid}`) || ''
     );
 
-    const [imageUrl, setImageUrl] = useState('');
-    const [invalidUrl, setInvalidUrl] = useState(false);
+    const [imageFile, setImageFile] = useState(null);
+    const [backgroundFile, setBackgroundFile] = useState(null);
 
     const [profileImage, setProfileImage] = useState(currentUser.photoURL || '');
     const [imageError, setImageError] = useState(false);
@@ -54,15 +56,27 @@ export default function ProfilePage() {
         setShowMessageModal(true);
     };
 
+    const handleFileChange = (e) => {
+        if (e.target.files[0]) {
+            setImageFile(e.target.files[0]);
+        }
+    }
+
+
     const handleProfileImageChange = async() => {
-        if (!imageUrl.trim()) return;
+        if (!imageFile) return;
 
         try {
+            const storageRef = ref(storage, `profile_images/${currentUser.uid}`);
+            await uploadBytes(storageRef, imageFile);
+            const newPhotoUrl = await getDownloadURL(storageRef);
+            
             await updateProfile(currentUser, {
-                photoURL: imageUrl,
+                photoURL: newPhotoUrl,
             });
-            setProfileImage(imageUrl);
+            setProfileImage(newPhotoUrl);
             setShowProfileImageModal(false);
+            setImageFile(null);
             showNotification("Profile picture updated!", "success")
         } catch (err) {
             showNotification("Something went wrong!", "error")
@@ -70,12 +84,31 @@ export default function ProfilePage() {
     }
 
     const handleBackgroundChange = async() => {
-        if (!backgroundUrl.trim()) return;
+        if (!backgroundFile) return;
 
-        localStorage.setItem(`bg_${currentUser.uid}`, backgroundUrl);
-        setBackgroundImage(backgroundUrl);
-        setShowBackgroundImageModal(false);
-        showNotification("Background picture updated!", "success")
+        try {
+            const storageRef = ref(storage, `background_images/${currentUser.uid}`);
+            await uploadBytes(storageRef, backgroundFile);
+            const newBackgroundUrl = await getDownloadURL(storageRef);
+            
+            localStorage.setItem(`bg_${currentUser.uid}`, newBackgroundUrl);
+            setBackgroundImage(backgroundUrl);
+            setShowBackgroundImageModal(false);
+            setBackgroundUrl(null);
+            showNotification("Background picture updated!", "success")
+        } catch (err) {
+            showNotification("Something went wrong!", "error")
+        }
+
+    }
+
+    if (loadingStats) {
+        return (
+            <Container className="text-center py-5 mt-5">
+                <Spinner animation="border" variant="primary" />
+                <p className="mt-3 text-muted">Loading...</p>
+            </Container>
+            )
     }
 
     return (
@@ -168,6 +201,7 @@ export default function ProfilePage() {
                     </Card>
                 </Col>
             </Row>
+
             {/* Modal Edit Profile Picture */}
             <Modal show={showProfileImageModal} onHide={() => setShowProfileImageModal(false)} centered>
                 <Modal.Header closeButton>
@@ -176,42 +210,14 @@ export default function ProfilePage() {
                 <Modal.Body>
                     {/* URL Input Section */}
                     <Form.Group>
-                        {imageUrl && (
-                            <div>
-                                <Form.Label>Preview: </Form.Label>
-                                <div className="text-center my-2 p-4 bg-light rounded">
-                                    <Image
-                                        src={imageUrl}
-                                        roundedCircle
-                                        style={{ width: "120px", height: "120px", objectFit: "cover", border: "3px solid white" }}
-                                        onError={() => setInvalidUrl(true)} 
-                                        onLoad={() => setInvalidUrl(false)}
-                                    />
-                                    {invalidUrl && (
-                                        <div className="text-danger mt-2">
-                                            <i className="bi bi-exclamation-triangle-fill me-2"></i>
-                                            Invalid image URL. Please try again.
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-                        <Form.Label>Image URL</Form.Label>
-                        <InputGroup>
-                            <InputGroup.Text className="bg-white">
-                                <i className="bi bi-link-45deg"></i>
-                            </InputGroup.Text>
-                            <Form.Control
-                                placeholder="Paste an image URL..."
-                                value={imageUrl}
-                                onChange={(e) => {
-                                    setImageUrl(e.target.value)
-                                    setInvalidUrl(false);
-                                }}
-                            /> 
-                        </InputGroup>
-                        <Form.Text className="text-muted">
-                            Paste a direct link to an image (format: jpg, png, etc).
+                        <Form.Label>Choose Image File</Form.Label>
+                        <Form.Control 
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileChange}
+                        />
+                        <Form.Text className="text-muted"> 
+                            Supported formats: jpg, png, jpeg.
                         </Form.Text>
                     </Form.Group>
                 </Modal.Body>
@@ -219,8 +225,8 @@ export default function ProfilePage() {
                     <Button variant="danger" onClick={() => setShowProfileImageModal(false)}>
                         Cancel
                     </Button>
-                    <Button variant="success" onClick={handleProfileImageChange} disabled={!imageUrl.trim() || invalidUrl}>
-                        Save Change
+                    <Button variant="success" onClick={handleProfileImageChange} disabled={!imageFile}>
+                        Upload & Save
                     </Button>
                 </Modal.Footer>    
             </Modal>
@@ -231,44 +237,15 @@ export default function ProfilePage() {
                     <Modal.Title>Update Background Picture</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    {/* URL Input Section */}
                     <Form.Group>
-                        {backgroundUrl && (
-                            <div>
-                                <Form.Label>Preview: </Form.Label>
-                                <div className="text-center my-2 p-4 bg-light rounded">
-                                    <Image
-                                        src={backgroundUrl}
-                                        fluid
-                                        style={{ maxHeight: "150px", width: "100%", objectFit: "cover", borderRadius: "8px" }}
-                                        onError={() => setInvalidUrl(true)} 
-                                        onLoad={() => setInvalidUrl(false)}
-                                    />
-                                    {invalidUrl && (
-                                        <div className="text-danger mt-2">
-                                            <i className="bi bi-exclamation-triangle-fill me-2"></i>
-                                            Invalid image URL. Please try again.
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-                        <Form.Label>Image URL</Form.Label>
-                        <InputGroup>
-                            <InputGroup.Text className="bg-white">
-                                <i className="bi bi-link-45deg"></i>
-                            </InputGroup.Text>
-                            <Form.Control
-                                placeholder="Paste an image URL..."
-                                value={backgroundUrl}
-                                onChange={(e) => {
-                                    setBackgroundUrl(e.target.value)
-                                    setInvalidUrl(false);
-                                }}
-                            /> 
-                        </InputGroup>
+                        <Form.Label>Choose Background Image</Form.Label>
+                        <Form.Control 
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => setBackgroundFile(e.target.files[0])}
+                        />
                         <Form.Text className="text-muted">
-                            Paste a direct link to an image (format: jpg, png, etc).
+                            Recommended size: 800x200 pixels
                         </Form.Text>
                     </Form.Group>
                 </Modal.Body>
@@ -276,8 +253,8 @@ export default function ProfilePage() {
                     <Button variant="danger" onClick={() => setShowBackgroundImageModal(false)}>
                         Cancel
                     </Button>
-                    <Button variant="success" onClick={handleBackgroundChange} disabled={!backgroundUrl.trim() || invalidUrl}>
-                        Save Change
+                    <Button variant="success" onClick={handleBackgroundChange} disabled={!backgroundFile}>
+                        Upload Background
                     </Button>
                 </Modal.Footer>    
             </Modal>

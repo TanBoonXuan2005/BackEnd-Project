@@ -11,6 +11,7 @@ export default function Header() {
     const userProfileImage = currentUser?.photoURL;
     const userBackgroundImage = currentUser?.background || null;
     const [showModal, setShowModal] = useState(false);
+    const [imageError, setImageError] = useState(false);
 
     const handleLogout = async() => {
         try {
@@ -51,7 +52,7 @@ export default function Header() {
                                         <NavDropdown
                                             align="end"
                                             title={
-                                                userProfileImage ? (
+                                                !imageError && userProfileImage ? (
                                                     <img 
                                                         src={userProfileImage}
                                                         alt="Profile"
@@ -62,6 +63,7 @@ export default function Header() {
                                                             objectFit: "cover", 
                                                             border: "2px solid white" 
                                                         }}
+                                                        onError={() => setImageError(true)}
                                                     />
                                                 ) : (
                                                     <div
@@ -91,7 +93,7 @@ export default function Header() {
                                                 ></div>
                                                 <div className="text-center px-3 pb-3">
                                                     <div style={{ marginTop: "-40px", marginBottom: "10px" }}>
-                                                        {userProfileImage ? (
+                                                        {!imageError && userProfileImage ? (
                                                             <Image 
                                                                 src={userProfileImage} 
                                                                 roundedCircle 

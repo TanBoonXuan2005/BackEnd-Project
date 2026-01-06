@@ -23,6 +23,7 @@
     "framer-motion": "^12.23.26",
     "motion": "^12.23.26",
     "node.js": "^0.0.1-security",
+    "nodemailer": "^7.0.12",
     "nodemon": "^3.1.11",
     "pg": "^8.16.3",
     "react": "^19.2.0",
