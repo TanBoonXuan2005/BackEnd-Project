@@ -7,7 +7,6 @@ import { useNavigate } from "react-router-dom";
 export default function Courts() {
     const [courts, setCourts] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState("");
     const { currentUser } = useContext(AuthContext);
     const navigate = useNavigate();
 

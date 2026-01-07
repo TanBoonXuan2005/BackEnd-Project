@@ -33,6 +33,12 @@ export default function ProfilePage() {
 
     const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
+    const now = new Date();
+    const activeBookings = bookings.filter(booking => {
+        const datePart = booking.date.split('T')[0];
+        const bookingDate = new Date(`${datePart}T${booking.time}`);
+        return bookingDate >= now;
+    });
     useEffect(() => {
         if (currentUser) {
             fetch(`${API_URL}/bookings?user_id=${currentUser.uid}`)
@@ -40,8 +46,16 @@ export default function ProfilePage() {
                 .then((data) => {
                     const sortedData = data.sort((a, b) => b.id - a.id)
                     setBookings(sortedData);
+
+                    const now = new Date();
+                    const activeBookings = data.filter(booking => {
+                        const datePart = booking.date.split('T')[0];
+                        const bookingDate = new Date(`${datePart}T${booking.time}`);
+                        return bookingDate >= now;
+                    });
+
                     const total = data.length;
-                    const booked = data.filter((booking) => booking.status === "booked").length;
+                    const booked = activeBookings.length;
                     const spent = data.reduce((acc, curr) => acc + parseFloat(curr.total_price), 0)
                     setBookingStats({ total, booked, spent });
                     setLoadingStats(false);
