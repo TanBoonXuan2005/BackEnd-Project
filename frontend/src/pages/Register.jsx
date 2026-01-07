@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import {
     createUserWithEmailAndPassword,
     getAuth,  
-    updateProfile,  
+    updateProfile, 
+    signOut, 
 } from "firebase/auth";
 
 export default function Register() {
@@ -27,6 +28,8 @@ export default function Register() {
             await updateProfile(user, {
                 displayName: formData.name,
             });
+
+            await signOut(auth);
 
             navigate("/login");
         } catch (err) {

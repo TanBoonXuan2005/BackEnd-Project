@@ -33,12 +33,6 @@ export default function ProfilePage() {
 
     const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-    const now = new Date();
-    const activeBookings = bookings.filter(booking => {
-        const datePart = booking.date.split('T')[0];
-        const bookingDate = new Date(`${datePart}T${booking.time}`);
-        return bookingDate >= now;
-    });
     useEffect(() => {
         if (currentUser) {
             fetch(`${API_URL}/bookings?user_id=${currentUser.uid}`)
