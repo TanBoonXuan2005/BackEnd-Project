@@ -1,163 +1,145 @@
-import { Row, Col, Image, Form, Button, Container } from "react-bootstrap";
 import { useState } from "react";
-import { useNavigate } from 'react-router-dom';
-import {
-    createUserWithEmailAndPassword,
-    getAuth,  
-    updateProfile, 
-    signOut, 
-} from "firebase/auth";
+import { useNavigate, Link } from 'react-router-dom';
+import { supabase } from "../../supabase";
+import { Mail, Lock, User, Phone, Loader2, AlertCircle } from 'lucide-react';
+
+const registerImage = "https://sfycdn.speedsize.com/8140516e-7833-475e-b70f-6e943a98adee/https://badmintonhq.co.uk/cdn/shop/articles/123.jpg?v=1704207657";
 
 export default function Register() {
     const navigate = useNavigate();
-    const registerImage = "https://sfycdn.speedsize.com/8140516e-7833-475e-b70f-6e943a98adee/https://badmintonhq.co.uk/cdn/shop/articles/123.jpg?v=1704207657";
-    const auth = getAuth();
+    const [loading, setLoading] = useState(false);
+    const [error,   setError]   = useState("");
 
-    const handleRegister = async(e) => {
-        e.preventDefault();
-
-        if (formData.password !== formData.confirm_password) {
-            alert("Passwords do not match");
-            return;
-        }
-
-        try {
-            const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-            const user = userCredential.user;
-           
-            await updateProfile(user, {
-                displayName: formData.name,
-            });
-
-            await signOut(auth);
-
-            navigate("/login");
-        } catch (err) {
-            console.error("Error: ",err);
-        }
-    }
-    
     const [formData, setFormData] = useState({
         name: "",
         phone_number: "",
         email: "",
         password: "",
-        confirm_password: "" 
+        confirm_password: ""
     });
-    
+
     const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value,
-        });
+        setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    const handleRegister = async (e) => {
+        e.preventDefault();
+        if (formData.password !== formData.confirm_password) {
+            setError("Passwords do not match.");
+            return;
+        }
+        setLoading(true);
+        setError("");
+        try {
+            const { error } = await supabase.auth.signUp({
+                email: formData.email,
+                password: formData.password,
+                options: {
+                    data: {
+                        full_name: formData.name,
+                        phone: formData.phone_number
+                    }
+                }
+            });
+            if (error) throw error;
+            navigate("/login");
+        } catch (err) {
+            setError(err.message || "Registration failed. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const InputField = ({ label, name, type = "text", placeholder, icon: Icon }) => (
+        <div>
+            <label className="block text-[13px] font-bold text-gray-700 dark:text-slate-300 mb-1.5">{label}</label>
+            <div className="relative">
+                <Icon size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 pointer-events-none" />
+                <input
+                    type={type}
+                    name={name}
+                    value={formData[name]}
+                    onChange={handleChange}
+                    placeholder={placeholder}
+                    required
+                    className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-slate-700 rounded-xl text-[14px] font-medium text-gray-900 dark:text-white bg-white dark:bg-[#1e293b] placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/15 transition-all"
+                />
+            </div>
+        </div>
+    );
+
     return (
-        <Container fluid className="vh-100 overflow-hidden">
-            <Row className="h-100">
-                <Col sm={6} className="p-0 d-none d-md-block">
-                    <Image 
-                        src={registerImage} 
-                        style={{ width: '100%', height: '100vh', objectFit: 'cover' }}
-                    /> 
-                    <div style={{ position: "absolute", top: "50px", left: "50px", color: "white", textShadow: "2px 2px 4px rgba(0,0,0,0.6)" }}>
-                        <h1 className="display-4 fw-bold">Join the Member.</h1>
-                        <p className="fs-4">Book faster. Play better.</p>
+        <div className="min-h-screen flex bg-[#fafafb] dark:bg-[#0f172a] transition-colors duration-300">
+
+            {/* ── Left: Hero image panel ── */}
+            <div className="hidden md:flex md:w-1/2 relative overflow-hidden">
+                <img
+                    src={registerImage}
+                    alt="Badminton"
+                    className="absolute inset-0 w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                <div className="absolute top-12 left-10 right-10">
+                    <div className="w-10 h-10 bg-white/10 backdrop-blur-sm rounded-[12px] flex items-center justify-center mb-4 border border-white/20">
+                        <span className="text-white font-extrabold text-xl leading-none">B</span>
                     </div>
-                </Col> 
-                <Col sm={6} className="d-flex justify-content-center align-items-center bg-light">
-                    <div className="p-5 shadow-lg rounded-4 bg-white" style={{ width: '100%', maxWidth: '550px'}}>
-                        <div className="mb-4 text-center">
-                            <h2 className="fw-bold text-primary">Create Account</h2>
-                            <p className="text-muted">Please enter your details to sign in.</p>
+                    <h1 className="text-4xl font-black text-white leading-tight mb-2">Join the Members.</h1>
+                    <p className="text-white/70 text-[17px] font-medium">Book faster. Play better.</p>
+                </div>
+            </div>
+
+            {/* ── Right: Form panel ── */}
+            <div className="w-full md:w-1/2 flex items-center justify-center px-6 py-12 overflow-y-auto">
+                <div className="w-full max-w-[420px]">
+
+                    {/* Mobile brand */}
+                    <div className="flex items-center gap-2 mb-8 md:hidden">
+                        <div className="w-9 h-9 bg-[#1a1f2e] dark:bg-[#0f172a] rounded-[10px] flex items-center justify-center">
+                            <span className="text-white font-extrabold text-lg leading-none">B</span>
                         </div>
-                        <Form onSubmit={handleRegister}>
-                            <Form.Group className="mb-3">
-                                <Form.Label style={{fontSize: 20}}>Full Name</Form.Label>
-                                <Form.Control 
-                                    type="text"
-                                    name="name"
-                                    value={formData.name}
-                                    onChange={handleChange}
-                                    placeholder="Enter your name" 
-                                    required
-                                />
-                            </Form.Group>
-
-                            <Form.Group className="mb-3">
-                                <Form.Label style={{fontSize: 20}} className="mt-3">Contact Number</Form.Label>
-                                <Form.Control 
-                                    type="text" 
-                                    name="phone_number"
-                                    value={formData.phone_number}
-                                    onChange={handleChange}
-                                    placeholder="Enter your phone number" 
-                                    required/> 
-                            </Form.Group>
-
-                            <Form.Group className="mb-3">
-                                <Form.Label style={{fontSize: 20}} className="mt-3">Email address</Form.Label>
-                                <Form.Control 
-                                    type="email" 
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    placeholder="Enter your email" 
-                                    required
-                                />
-                            </Form.Group>
-
-                            <Row>
-                                <Col sm={6}>
-                                    <Form.Group className="mb-3">
-                                        <Form.Label style={{fontSize: 20}} className="mt-3">Password</Form.Label>
-                                        <Form.Control 
-                                            type="password"
-                                            name="password"
-                                            value={formData.password}
-                                            onChange={handleChange}
-                                            placeholder="********" 
-                                            required
-                                        />
-                                    </Form.Group>
-                                </Col>
-                                <Col sm={6}>
-                                    <Form.Group className="mb-3">
-                                        <Form.Label style={{fontSize: 20}} className="mt-3">Confirm Password</Form.Label>
-                                        <Form.Control 
-                                            type="password"
-                                            name='confirm_password'
-                                            value={formData.confirm_password}
-                                            onChange={handleChange}
-                                            placeholder="******" 
-                                            required
-                                        />
-                                    </Form.Group>
-                                </Col>
-                            </Row>
-
-                            <Button 
-                                onClick={handleRegister}
-                                variant="dark" 
-                                type="submit" 
-                                className="w-100 rounded-pill py-2 mt-3 fw-bold shadow-sm"
-                            >
-                                Sign Up
-                            </Button>
-                        </Form>
-                        <div className="text-center mt-4">
-                            <span className="text-muted">Already a member? </span>
-                            <span 
-                                className="text-primary fw-bold" 
-                                style={{ cursor: "pointer" }} 
-                                onClick={() => navigate("/login")}
-                            >
-                                Login here
-                            </span>
-                        </div>
+                        <span className="text-[18px] font-black text-gray-900 dark:text-white">
+                            Badminton<span className="text-emerald-500">Pro</span>
+                        </span>
                     </div>
-                </Col>
-            </Row>
-        </Container>
-    )
+
+                    <h2 className="text-[28px] font-black text-gray-900 dark:text-white tracking-tight mb-1">Create Account</h2>
+                    <p className="text-gray-500 dark:text-slate-400 font-medium mb-8">Fill in the details below to get started.</p>
+
+                    {error && (
+                        <div className="flex items-center gap-2.5 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/50 text-red-600 dark:text-red-400 text-[13px] font-medium px-4 py-3 rounded-xl mb-5">
+                            <AlertCircle size={15} className="shrink-0" />
+                            {error}
+                        </div>
+                    )}
+
+                    <form onSubmit={handleRegister} className="space-y-4">
+                        <InputField label="Full Name"       name="name"             placeholder="Enter your name"         icon={User}  />
+                        <InputField label="Contact Number"  name="phone_number"     placeholder="Enter your phone number" icon={Phone} />
+                        <InputField label="Email Address"   name="email"            type="email"    placeholder="Enter your email"    icon={Mail}  />
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <InputField label="Password"         name="password"         type="password" placeholder="••••••••"            icon={Lock}  />
+                            <InputField label="Confirm Password" name="confirm_password" type="password" placeholder="••••••••"            icon={Lock}  />
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full py-3.5 rounded-xl bg-[#1a1f2e] dark:bg-emerald-600 hover:bg-black dark:hover:bg-emerald-700 text-white font-bold text-[15px] transition-all flex items-center justify-center gap-2 disabled:opacity-60 mt-2 cursor-pointer border-0"
+                        >
+                            {loading ? <Loader2 size={18} className="animate-spin" /> : null}
+                            {loading ? 'Creating account…' : 'Sign Up'}
+                        </button>
+                    </form>
+
+                    <p className="text-center mt-8 text-[14px] text-gray-500 dark:text-slate-400 font-medium">
+                        Already a member?{' '}
+                        <Link to="/login" className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline">
+                            Login here
+                        </Link>
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
 }

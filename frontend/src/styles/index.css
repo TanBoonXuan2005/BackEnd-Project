@@ -1,0 +1,38 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+
+/* Enable class-based dark mode for Tailwind v4 */
+@custom-variant dark (.dark &);
+
+@theme {
+    --font-heading: 'Playfair Display', Georgia, 'Times New Roman', serif;
+    --font-body: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+/* Fix WebKit Autofill in Dark Mode */
+html.dark input:-webkit-autofill,
+html.dark input:-webkit-autofill:hover, 
+html.dark input:-webkit-autofill:focus, 
+html.dark input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px #1e293b inset !important;
+    -webkit-text-fill-color: white !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Apply fonts globally */
+html {
+    font-family: var(--font-body);
+    background-color: #fafafb;
+}
+html.dark {
+    background-color: #0f172a;
+}
+
+a {
+    text-decoration: none;
+}
+
+/* Utility class for serif headings */
+.font-heading {
+    font-family: var(--font-heading);
+}

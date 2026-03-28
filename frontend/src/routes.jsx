@@ -1,8 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import BookingPage from "./pages/BookingPage";
-import Login from "./pages/Login";
+import Auth from "./pages/Auth";
 import Home from "./pages/Home";
-import Register from "./pages/Register";
 import Header from "./components/Header";
 import ProfilePage from "./pages/ProfilePage";
 import ErrorPage from "./pages/ErrorPage";
@@ -21,10 +20,6 @@ const router = createBrowserRouter([
             {
                 path: '/bookings/:id',
                 element: <BookingPage/>
-            },
-            {
-                path: '/bookings/edit/:id',
-                element: <BookingPage isEditMode={true}/>
             },
             {
                 path: '/courts',
@@ -46,11 +41,11 @@ const router = createBrowserRouter([
     },
     {
       path: '/login',
-      element: <Login/>
+      element: <Auth/>
     },
     {
       path: '/register',
-      element: <Register/>
+      element: <Auth/>
     }
 ]);
 

@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd:*)",
+      "Bash(xargs sed:*)",
+      "Bash(npx vite:*)",
+      "Bash(grep -c dark dist/assets/index-*.css)",
+      "Bash(ls dist/assets/*.css)"
+    ]
+  }
+}
